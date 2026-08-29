@@ -1,0 +1,21 @@
+node_modules/
+dist/
+build/
+.cache/
+.vite/
+vite.config.*.timestamp-*
+*.tsbuildinfo
+*-debug.log*
+logs/
+*.log
+.claude-replay.*
+.tmp-*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+server/.env
+server/.env.local
+!.env.example
+!server/.env.example

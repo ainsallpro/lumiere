@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String
+  category      String
+  subcategory   String?
+  originalPrice Int
+  discount      Int
+  rating        Float
+  reviews       Int
+  img           String
+  gallery       String[] @default([]) // Array of base64 strings for additional images
+  inStock       Boolean
+  room          String
+  material      String
+  colors        String[] // Array of strings since Postgres supports array types
+  tabs          String[]
+  orderItems    OrderItem[]
+  userReviews   Review[]
+}
+
+model User {
+  id                   Int       @id @default(autoincrement())
+  name                 String
+  email                String    @unique
+  password             String?
+  googleId             String?   @unique
+  resetPasswordToken   String?   @unique
+  resetPasswordExpires DateTime?
+  isAdmin              Boolean   @default(false)
+  phone                String?
+  orders               Order[]
+  addresses            Address[]
+  joinedAt             DateTime  @default(now())
+}
+
+model Order {
+  id            String      @id // Custom ID like #LM-20260801
+  user          User?       @relation(fields: [userId], references: [id])
+  userId        Int?
+  customerName  String
+  email         String
+  address       String
+  total         Int
+  status        String      // Accepted, Processing, Delivered, Cancelled
+  paymentMethod String
+  date          DateTime    @default(now())
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  qty       Int
+  color     String
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+  orderId     String
+  authorName  String
+  rating      Int
+  title       String
+  body        String   @default("")
+  date        DateTime @default(now())
+
+  @@unique([productId, orderId]) // one review per product per order
+}
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  name      String
+  phone     String
+  street    String
+  city      String
+  zip       String
+  country   String   @default("Indonesia")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
